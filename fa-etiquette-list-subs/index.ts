@@ -22,7 +22,7 @@ async function listSubscriptions(context: Context) {
         .get()
         .then((res) => {
             context.log('Subscriptions received');
-            context.log(res);
+            // context.log(res);
             return(res);
         })
         .catch((err) => {
