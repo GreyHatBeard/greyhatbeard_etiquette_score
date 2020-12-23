@@ -1,23 +1,24 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { GraphClient } from "../authHelpers";
-import { Event } from "@microsoft/microsoft-graph-types/microsoft-graph";
+import { User } from "@microsoft/microsoft-graph-types/microsoft-graph";
 
-export class eventsHelper {
+class userHelper {
 
-    public static async handleEventNotification(notification: any, context: Context): Promise<boolean> {
+    public async initialiseUserExtension(context: Context) {
         const client = await GraphClient();
-        //context.log(notification.value[0].resource);
-        //context.log('Notification log: ' + notification.value[0])
-
-        // Check type is created or updated
 
         return client
-            .api(notification.value[0].resource)
-            .get()
+            .api('me/extensions')
+            .post(
+                {
+                    "@odata.type":"microsoft.graph.openTypeExtension",
+                    "extensionName":"com.greyHatBeard.score",
+                    "currentScore":"500"
+                }
+            )
             .then((res) => {
-                context.log('Success');
+                context.log('Extensions set');
                 //context.log(res);
-                return this.checkAgendaExists(res, context);
             })
             .catch((err) => {
                 context.log('Failed');
@@ -26,7 +27,7 @@ export class eventsHelper {
             });
     }
 
-    private static checkAgendaExists(selectedEvent: Event, context: Context): boolean {
+    private checkAgendaExists(selectedEvent: Event, context: Context): boolean {
         // TODO: identify further details
         context.log('Checking agenda');
         context.log(selectedEvent.bodyPreview.toLowerCase());
@@ -38,3 +39,4 @@ export class eventsHelper {
         return false;
     }
 }
+module.exports = new eventsHelper();

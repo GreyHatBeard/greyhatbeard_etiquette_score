@@ -1,7 +1,7 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { GraphClient } from "../authHelpers";
 import { User } from "@microsoft/microsoft-graph-types"
-import { handleEventNotification } from "../helpers/eventsHelper"
+import { eventsHelper } from "../helpers/eventsHelper"
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
     if (context) context.log("Handling subscription request");
@@ -17,7 +17,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     }
     else {
         context.log('Notification received');
-        const response: boolean = await handleEventNotification(req.body, context);
+        const response: boolean = await eventsHelper.handleEventNotification(req.body, context);
         if (response) {
             context.log('Event agenda valid');
         } else {
