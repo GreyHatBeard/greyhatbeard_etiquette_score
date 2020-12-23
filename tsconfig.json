@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es6",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "outDir": "dist",
+        "rootDir": ".",
+        "strict": false
+    },
+    "include": [
+        "**/*",
+        "functions/**/*"
+    ],
+    "exclude": [
+        "node_modules/"
+    ]
+}

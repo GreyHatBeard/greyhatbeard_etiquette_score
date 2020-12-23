@@ -1,0 +1,30 @@
+{
+  "name": "greyhatebeard-etiquette-score",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/greyhatbeard/greyhatbeard-etiquette-score.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/greyhatbeard/greyhatbeard-etiquette-score"
+  },
+  "homepage": "https://github.com/greyhatbeard/greyhatbeard-etiquette-score",
+  "devDependencies": {
+    "@azure/functions": "^1.0.2-beta2",
+    "@microsoft/microsoft-graph-types": "^0.4.1",
+    "@types/node": "^14.14.14",
+    "typescript": "^3.3.3"
+  },
+  "dependencies": {
+    "@microsoft/microsoft-graph-client": "^0.4.1",
+    "node-fetch": "^1.6.3"
+  }
+}
