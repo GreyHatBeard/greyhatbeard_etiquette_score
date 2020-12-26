@@ -8,7 +8,6 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     if (context) context.log("Starting Azure function!");
 
     // TODO: Get user ID from querystring
-
     
     await subscriptionHelper.addSubscription('48e8a1ab-0d3a-4f9b-b200-e9e9d1437a2b', context);
     context.log("About to initalise user");

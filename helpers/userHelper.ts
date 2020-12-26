@@ -28,6 +28,10 @@ export class userHelper {
     }
 
     public static async updateUserScore(userId: string, updatedScore: number, context: Context) {
+        await this.updateScore('currentScore', userId, updatedScore, context);
+    }
+
+    public static async updateScore(scoreName: string, userId: string, updatedScore: number, context: Context) {
         const client = await GraphClient();
         context.log('Updating user score');
         return client
@@ -36,7 +40,7 @@ export class userHelper {
                 {
                     "@odata.type":"microsoft.graph.openTypeExtension",
                     "extensionName":"com.greyHatBeard.score",
-                    "currentScore":updatedScore
+                    [scoreName]:updatedScore
                 }
             )
             .then((res) => {

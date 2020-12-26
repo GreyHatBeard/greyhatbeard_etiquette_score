@@ -8,13 +8,15 @@ export class subscriptionHelper {
     public static async addSubscription(userID: string, context: Context) {
         const client = await GraphClient();
         context.log("Adding subscription with url " + NotificationReceiverUrl);
-    
+        const currentDate: Date = new Date();
+        const subscriptionDate = currentDate.setDate(currentDate.getDate() + 1);
+
         return client
             .api("/subscriptions")
             .post(
                 {
                     "changeType": "created",
-                    "expirationDateTime": "2020-12-24T11:23:45.9356913Z",
+                    "expirationDateTime": subscriptionDate,
                     "notificationUrl": NotificationReceiverUrl,
                     "resource": "users/" + userID + "/events"
                 }
