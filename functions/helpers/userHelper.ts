@@ -7,24 +7,55 @@ export class userHelper {
     public static async initialiseUserExtension(userId: string, context: Context) {
         const client = await GraphClient();
         context.log('Initialising user extension');
-        return client
+        
+        await client
             .api('users/' + userId + '/extensions')
-            .post(
-                {
-                    "@odata.type":"microsoft.graph.openTypeExtension",
-                    "extensionName":"com.greyHatBeard.score",
-                    "currentScore":500
-                }
-            )
-            .then((res) => {
-                context.log('Extensions set');
-                //context.log(res);
+            .get()
+            .then(async (res) => {
+                context.log('Extensions exist so resetting user value');
+                await client
+                    .api('users/' + userId + '/extensions//com.greyHatBeard.score')
+                    .patch(
+                        {
+                            "@odata.type":"microsoft.graph.openTypeExtension",
+                            "extensionName":"com.greyHatBeard.score",
+                            "currentScore":500,
+                            "agendaScore": 15
+                        }
+                    )
+                    .then((res) => {
+                        context.log('Extensions set');
+                        //context.log(res);
+                    })
+                    .catch((err) => {
+                        context.log('Failed');
+                        context.log(err);
+                        throw err;
+                    });
             })
-            .catch((err) => {
-                context.log('Failed');
-                context.log(err);
-                throw err;
+            .catch(async (err) => {
+                context.log('Extension does not exist at users/' + userId + 'extensions so creating');
+                client
+                    .api('users/' + userId + '/extensions')
+                    .post(
+                        {
+                            "@odata.type":"microsoft.graph.openTypeExtension",
+                            "extensionName":"com.greyHatBeard.score",
+                            "currentScore":500
+                        }
+                    )
+                    .then((res) => {
+                        context.log('Extensions set');
+                        //context.log(res);
+                    })
+                    .catch((err) => {
+                        context.log('Failed');
+                        context.log(err);
+                        throw err;
+                    });
             });
+
+        
     }
 
     public static async updateUserScore(userId: string, updatedScore: number, context: Context) {
@@ -34,8 +65,6 @@ export class userHelper {
     public static async updateScore(scoreName: string, userId: string, updatedScore: number, context: Context) {
         const client = await GraphClient();
         context.log('Updating user score');
-        // TODO: check if exists already
-
         return client
             .api('users/' + userId + '/extensions/com.greyHatBeard.score')
             .patch(
@@ -64,7 +93,7 @@ export class userHelper {
             .get()
             .then((res) => {
                 context.log('Extensions set');
-                context.log(res);
+                // context.log(res);
                 const currentScore: number = res.value[0].currentScore;
                 return currentScore;
             })
