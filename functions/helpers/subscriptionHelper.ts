@@ -5,7 +5,11 @@ import {NotificationReceiverUrl } from '../secrets'
 
 export class subscriptionHelper {
 
-    public static async addSubscription(userID: string, context: Context) {
+    public static async addEventSubscription(userID: string, context: Context) {
+        await this.addSubscription("users/" + userID + "/events", "UserEvent", context);
+    }
+
+    public static async addSubscription(resource: string, subscriptionType: string, context: Context) {
         const client = await GraphClient();
         context.log("Adding subscription with url " + NotificationReceiverUrl);
         const currentDate: Date = new Date();
@@ -16,9 +20,10 @@ export class subscriptionHelper {
             .post(
                 {
                     "changeType": "created",
+                    "clientState": subscriptionType,
                     "expirationDateTime": subscriptionDate,
                     "notificationUrl": NotificationReceiverUrl,
-                    "resource": "users/" + userID + "/events"
+                    "resource": resource
                 }
             )
             .then((res) => {

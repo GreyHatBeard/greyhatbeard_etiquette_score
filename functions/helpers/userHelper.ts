@@ -34,6 +34,8 @@ export class userHelper {
     public static async updateScore(scoreName: string, userId: string, updatedScore: number, context: Context) {
         const client = await GraphClient();
         context.log('Updating user score');
+        // TODO: check if exists already
+
         return client
             .api('users/' + userId + '/extensions/com.greyHatBeard.score')
             .patch(

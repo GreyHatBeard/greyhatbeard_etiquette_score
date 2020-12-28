@@ -4,15 +4,13 @@ import { Event } from "@microsoft/microsoft-graph-types/microsoft-graph";
 
 export class eventsHelper {
 
-    public static async handleEventNotification(notification: any, context: Context): Promise<boolean> {
+    public static async handleEventNotification(resource: string, context: Context): Promise<boolean> {
         const client = await GraphClient();
-        //context.log(notification.value[0].resource);
-        //context.log('Notification log: ' + notification.value[0])
 
         // TODO: Check type is created or updated
 
         return client
-            .api(notification.value[0].resource)
+            .api(resource)
             .get()
             .then((res) => {
                 context.log('Success');
