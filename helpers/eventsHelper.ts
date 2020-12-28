@@ -9,7 +9,7 @@ export class eventsHelper {
         //context.log(notification.value[0].resource);
         //context.log('Notification log: ' + notification.value[0])
 
-        // Check type is created or updated
+        // TODO: Check type is created or updated
 
         return client
             .api(notification.value[0].resource)
@@ -26,7 +26,7 @@ export class eventsHelper {
             });
     }
 
-    private static checkAgendaExists(selectedEvent: Event, context: Context): boolean {
+    public static checkAgendaExists(selectedEvent: Event, context: Context): boolean {
         // TODO: identify further details
         context.log('Checking agenda');
         context.log(selectedEvent.bodyPreview.toLowerCase());
@@ -36,5 +36,23 @@ export class eventsHelper {
         }
         context.log('Agenda not found in event');
         return false;
+    }
+
+    public static async listUserOrganisedEvents(userID: string, context: Context): Promise<Event[]> {
+        const client = await GraphClient();
+
+        return client
+            .api('users/'+userID+'/events?$filter=isOrganizer eq true')
+            .get()
+            .then((res) => {
+                context.log('Success');
+                //context.log(res);
+                return res;
+            })
+            .catch((err) => {
+                context.log('Failed');
+                context.log(err);
+                throw err;
+            });
     }
 }
