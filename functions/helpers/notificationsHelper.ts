@@ -7,7 +7,7 @@ export class notificationsHelper {
 
     public static async handleNotification(notification: any, context: Context) {
         const client = await GraphClient();
-        context.log(notification);
+        // context.log(notification);
         switch (notification.value[0].clientState.toLowerCase()) {
             case "userevent":
                 context.log('Processing UserEvent notification');
