@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -w"
+    "build": "tsc -w",
+    "func": "func host start",
+    "dev": "concurrently --names 'BUILD,RUN' --prefix-colors 'yellow,blue' --kill-others \"npm run build\" \"npm run func\""
   },
   "repository": {
     "type": "git",
