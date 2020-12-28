@@ -7,10 +7,11 @@ export class notificationsHelper {
 
     public static async handleNotification(notification: any, context: Context) {
         const client = await GraphClient();
-        
-        switch (notification.value[0].clientState) {
-            case "userEvent":
-                const response: boolean = await eventsHelper.handleEventNotification(notification, context);
+        context.log(notification);
+        switch (notification.value[0].clientState.toLowerCase()) {
+            case "userevent":
+                context.log('Processing UserEvent notification');
+                const response: boolean = await eventsHelper.handleEventNotification(notification.value[0].resource, context);
         
                 if (response) {
                     context.log('Event agenda valid');

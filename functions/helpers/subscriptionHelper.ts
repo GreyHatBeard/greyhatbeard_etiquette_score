@@ -12,16 +12,16 @@ export class subscriptionHelper {
     public static async addSubscription(resource: string, subscriptionType: string, context: Context) {
         const client = await GraphClient();
         context.log("Adding subscription with url " + NotificationReceiverUrl);
-        const currentDate: Date = new Date();
-        const subscriptionDate = currentDate.setDate(currentDate.getDate() + 1);
-
+        const subscriptionDate: Date = new Date();
+        subscriptionDate.setDate(subscriptionDate.getDate() + 1);
+        context.log("Creating subscription date with expiry " + subscriptionDate.toISOString());
         return client
             .api("/subscriptions")
             .post(
                 {
                     "changeType": "created",
                     "clientState": subscriptionType,
-                    "expirationDateTime": subscriptionDate,
+                    "expirationDateTime": subscriptionDate.toISOString(),
                     "notificationUrl": NotificationReceiverUrl,
                     "resource": resource
                 }

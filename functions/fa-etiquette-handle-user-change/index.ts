@@ -9,7 +9,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     // context.log(req);
     if (req.query != null && req.query['validationToken'] != null) {
         context.log("Validation token sent: " + req.query['validationToken']);
-        await notificationsHelper.handleNotification(req.body, context);
+        
         context.res = {
             status: 200,
             body: req.query['validationToken']
@@ -18,7 +18,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     }
     else {
         context.log('Notification received');
-        
+        await notificationsHelper.handleNotification(req.body, context);
         context.res = {
             status: 202,
             body: 'Score changed'
