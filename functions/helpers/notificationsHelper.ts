@@ -25,8 +25,7 @@ export class notificationsHelper {
     private static async handleUserEventNotification(notification: any, context: Context) {
         context.log('Processing UserEvent notification');
         let currentUser = await this.getUserIdFromResource(notification.value[0].resource, 'Events');
-        const currentScore = await userHelper.getUserScore(currentUser, context);
-        await eventsHelper.handleEventNotification(notification.value[0].resource, currentUser, currentScore, context);
+        await eventsHelper.handleEventNotification(notification.value[0].resource, currentUser, context);
     }
 
     private static async getUserIdFromResource(resourceText: string, urlStub: string): Promise<string> {

@@ -1,6 +1,6 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { GraphClient } from "../authHelpers";
-import { User } from "@microsoft/microsoft-graph-types/microsoft-graph";
+import { Subscription } from "@microsoft/microsoft-graph-types/microsoft-graph";
 import {NotificationReceiverUrl } from '../secrets'
 
 export class subscriptionHelper {
@@ -36,4 +36,20 @@ export class subscriptionHelper {
             });;
     }
 
+    public static async listSubscriptions(context: Context) { // : Promise<Subscription[]>
+        const client = await GraphClient();
+        context.log("Listing subscriptions");
+    
+        return client.api("/subscriptions").get();
+    }
+
+    public static async deleteSubscription(subscriptionId: string, context: Context) {
+        const client = await GraphClient();
+        context.log("Deleting subscription with id " + subscriptionId);
+    
+        await client.api("/subscriptions/" + subscriptionId).delete()
+        .catch((err) => {
+            context.log('Damn, cannot delete: ' + err);
+        });
+    }
 }

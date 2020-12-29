@@ -2,20 +2,24 @@ import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { GraphClient } from "../authHelpers";
 import { Event, Attendee } from "@microsoft/microsoft-graph-types/microsoft-graph";
 import { userHelper } from "../helpers/userHelper";
+import { scoreName } from "../model/constants";
 
 export class eventsHelper {
 
-    public static async handleEventNotification(resourceText: string, userID: string, currentScore: number, context: Context) {
+    public static async handleEventNotification(resourceText: string, userID: string, context: Context) {
         const client = await GraphClient();
         context.log('Processing event notification with resource ' + resourceText.toString());
         // TODO: Check type is created or updated
 
         const currentEvent: Event = await client.api(resourceText).get();
-        const isValidAgenda: boolean = this.checkAgendaExists(currentEvent, context);
-        await userHelper.setUserScoreInRange(isValidAgenda, 'agendaScore', currentScore, 0, 30, 1, userID, context);
+        const isValidAgenda: boolean = await this.checkAgendaExists(currentEvent, context);
+        const currentAgendaScore = await userHelper.getUserScore(userID, scoreName.agenda, context);
+        context.log('Current agenda score is ' + currentAgendaScore);
+        await userHelper.setUserScoreInRange(isValidAgenda, scoreName.agenda, currentAgendaScore, 0, 30, 1, userID, context);
 
         const attendeesAlreadyBooked: boolean = await this.checkAttendeesNotAlreadyBooked(currentEvent, context);
-        await userHelper.setUserScoreInRange(attendeesAlreadyBooked, 'attendeesBookedScore', currentScore, 0,30,1,userID, context);
+        const currentAttendeeBookingsScore = await userHelper.getUserScore(userID, scoreName.attendeeBookings, context);
+        await userHelper.setUserScoreInRange(attendeesAlreadyBooked, scoreName.attendeeBookings, currentAttendeeBookingsScore, 0,30,1,userID, context);
     }
 
     public static checkAgendaExists(selectedEvent: Event, context: Context): boolean {
