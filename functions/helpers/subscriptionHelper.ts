@@ -28,7 +28,7 @@ export class subscriptionHelper {
             )
             .then((res) => {
                 context.log('Result received');
-                context.log(res);
+                // context.log(res);
                 return;
             })
             .catch((err) => {
