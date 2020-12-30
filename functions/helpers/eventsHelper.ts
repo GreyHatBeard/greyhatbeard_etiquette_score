@@ -18,8 +18,10 @@ export class eventsHelper {
         await userHelper.setUserScoreInRange(isValidAgenda, scoreName.agenda, currentAgendaScore, 0, 30, 1, userID, context);
 
         const attendeesAlreadyBooked: boolean = await this.checkAttendeesNotAlreadyBooked(currentEvent, context);
-        const currentAttendeeBookingsScore = await userHelper.getUserScore(userID, scoreName.attendeeBookings, context);
-        await userHelper.setUserScoreInRange(attendeesAlreadyBooked, scoreName.attendeeBookings, currentAttendeeBookingsScore, 0,30,1,userID, context);
+        if (attendeesAlreadyBooked != null) {
+            const currentAttendeeBookingsScore = await userHelper.getUserScore(userID, scoreName.attendeeBookings, context);
+            await userHelper.setUserScoreInRange(attendeesAlreadyBooked, scoreName.attendeeBookings, currentAttendeeBookingsScore, 0,30,1,userID, context);
+        }
     }
 
     public static checkAgendaExists(selectedEvent: Event, context: Context): boolean {
@@ -38,21 +40,38 @@ export class eventsHelper {
         const client = await GraphClient();
         let attendeesAlreadyBooked = false;
         if (selectedEvent.attendees !== null) {
+            context.log(selectedEvent.attendees);
+            context.log('Attendees found: ' + selectedEvent.attendees.keys.length);
+            if (selectedEvent.attendees.keys.length === 0) {
+                return null;
+            }
             selectedEvent.attendees.forEach(async (attendee: Attendee)=> {
                 // get events for the attendee at this time
-                const attendeeEvents = await client.api('users/' + attendee.emailAddress.address + '/calendar/calendarView?startDateTime=' + selectedEvent.start.dateTime + '&endDateTime=' + selectedEvent.end.dateTime).get();
+                context.log('Retrieving events for attendee ' + attendee.emailAddress.address);
+                const attendeeEventAPI = 'users/' + attendee.emailAddress.address + '/calendar/calendarView?startDateTime=' + selectedEvent.start.dateTime + '&endDateTime=' + selectedEvent.end.dateTime;
+                context.log('Retrieval API: ' + attendeeEventAPI);
+                await client.api(attendeeEventAPI).get()
+                .then((attendeeEvents)=>{
+                    context.log(attendeeEvents);
+                    attendeeEvents.forEach(async (attendeeEvent: Event) => {
+                        if (attendeeEvent.id !== selectedEvent.id) {
+                            // eventCount++;
+                            attendeesAlreadyBooked = true;
+                        }
+                    });
+                })
+                .catch((err)=>{
+                    context.log('Failed to retrieve events for ' + attendee.emailAddress.address);
+                    context.log(err);
+                    attendeesAlreadyBooked = null;
+                });
                 // TODO: determine if we want to check the number and change the score if more overlapping events
                 // let eventCount = 0;
-                attendeeEvents.forEach(async (attendeeEvent: Event) => {
-                    if (attendeeEvent.id !== selectedEvent.id) {
-                        // eventCount++;
-                        attendeesAlreadyBooked = true;
-                    }
-                });
+                
             });
         }
         else {
-            return true;
+            return null;
         }
         return attendeesAlreadyBooked;
     }

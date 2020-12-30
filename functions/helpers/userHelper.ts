@@ -63,7 +63,7 @@ export class userHelper {
         // TODO: check if exists already
 
         return client
-            .api('users/' + userId + '/extensions/ccom.greyhatbeard.etiquettescores.' + scoreName)
+            .api('users/' + userId + '/extensions/com.greyhatbeard.etiquettescores.' + scoreName)
             .patch(
                 {
                     "@odata.type":"microsoft.graph.openTypeExtension",
@@ -72,11 +72,11 @@ export class userHelper {
                 }
             )
             .then((res) => {
-                context.log('Score updated');
+                context.log('Score updated for ' + scoreName);
                 //context.log(res);
             })
             .catch((err) => {
-                context.log('Failed');
+                context.log('Failed to update score ' + scoreName);
                 context.log(err);
                 throw err;
             });
@@ -91,11 +91,11 @@ export class userHelper {
             .then((res) => {
                 context.log('Extensions set');
                 context.log(res);
-                const currentScore: number = res.value[0].score;
+                const currentScore: number = res.score;
                 return currentScore;
             })
             .catch((err) => {
-                context.log('Failed');
+                context.log('Failed to load score ' + scoreName);
                 context.log(err);
                 throw err;
             });
