@@ -24,6 +24,7 @@ The rules are based on what can be triggered via Graph events.
 ## How does it run?
 
 Configure app registration and store details in secrets.ts
-Run "ngrok http 7071 host-header="localhost:7071"
-Run "npm run dev"
+Run "ngrok http 7071 -host-header="localhost:7071"
+Add the resulting ngrok url to secrets.ts (e.g. https://c3f375d89967.ngrok.io)
+Run "npm run dev" from the functions folder
 
