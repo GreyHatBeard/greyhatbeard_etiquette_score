@@ -23,7 +23,8 @@
     "@azure/functions": "^1.0.2-beta2",
     "@microsoft/microsoft-graph-types": "^0.4.1",
     "@types/node": "^14.14.14",
-    "typescript": "^3.3.3"
+    "typescript": "^3.3.3",
+    "concurrently": "5.3.0"
   },
   "dependencies": {
     "@microsoft/microsoft-graph-client": "^0.4.1",
