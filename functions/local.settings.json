@@ -2,6 +2,11 @@
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "",
-    "FUNCTIONS_WORKER_RUNTIME": "node"
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "InstrumentationKey=33079553-feb9-465b-b297-20909387bfa9;IngestionEndpoint=https://uksouth-0.in.applicationinsights.azure.com/",
+    "MicrosoftAppID": "874b2445-ebad-4c52-8f31-d5a134df4018",
+    "MicrosoftAppSecret": "2~HUF9.8FhOIf4-~rRL2A8~W-YoHSFH6y1",
+    "TenantDomain": "mcdonnell.onmicrosoft.com",
+    "NotificationReceiverUrl": "https://c3f375d89967.ngrok.io/api/fa-etiquette-handle-user-change"
   }
 }

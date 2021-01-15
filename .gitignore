@@ -5,3 +5,4 @@ package-lock.json
 .vscode/*
 secrets.ts
 node_modules
+functions/local.settings.json

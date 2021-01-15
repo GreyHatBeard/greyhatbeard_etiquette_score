@@ -2,6 +2,7 @@ import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { GraphClient } from "../authHelpers";
 import { eventsHelper } from "../helpers/eventsHelper";
 import { userHelper } from "../helpers/userHelper";
+import {defaultClient, setup } from 'applicationinsights';
 
 /*
 -----------------------------------------------------------------------------------
@@ -14,18 +15,18 @@ export class notificationsHelper {
 
     public static async handleNotification(notification: any, context: Context) {
         const client = await GraphClient();
-        // context.log(notification);
+        // defaultClient.trackTrace({message:notification);
         switch (notification.value[0].clientState.toLowerCase()) {
             case "userevent":
-                await this.handleUserEventNotification(notification, context);
+                await this.handleUserEventNotification(notification);
                 break;
         }
     }
 
-    private static async handleUserEventNotification(notification: any, context: Context) {
-        context.log('Processing UserEvent notification');
+    private static async handleUserEventNotification(notification: any) {
+        defaultClient.trackTrace({message:'Processing UserEvent notification', severity:3});
         let currentUser = await this.getUserIdFromResource(notification.value[0].resource, 'Events');
-        await eventsHelper.handleEventNotification(notification.value[0].resource, currentUser, context);
+        await eventsHelper.handleEventNotification(notification.value[0].resource, currentUser);
     }
 
     private static async getUserIdFromResource(resourceText: string, urlStub: string): Promise<string> {

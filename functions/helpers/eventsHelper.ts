@@ -3,56 +3,57 @@ import { GraphClient } from "../authHelpers";
 import { Event, Attendee } from "@microsoft/microsoft-graph-types/microsoft-graph";
 import { userHelper } from "../helpers/userHelper";
 import { scoreName } from "../model/constants";
+import {defaultClient, setup } from 'applicationinsights';
 
 export class eventsHelper {
 
-    public static async handleEventNotification(resourceText: string, userID: string, context: Context) {
+    public static async handleEventNotification(resourceText: string, userID: string) {
         const client = await GraphClient();
-        context.log('Processing event notification with resource ' + resourceText.toString());
+        defaultClient.trackTrace({message:'Processing event notification with resource ' + resourceText.toString(),severity:4});
         // TODO: Check type is created or updated
 
         const currentEvent: Event = await client.api(resourceText).get();
-        const isValidAgenda: boolean = await this.checkAgendaExists(currentEvent, context);
-        const currentAgendaScore = await userHelper.getUserScore(userID, scoreName.agenda, context);
-        context.log('Current agenda score is ' + currentAgendaScore);
-        await userHelper.setUserScoreInRange(isValidAgenda, scoreName.agenda, currentAgendaScore, 0, 30, 1, userID, context);
+        const isValidAgenda: boolean = await this.checkAgendaExists(currentEvent);
+        const currentAgendaScore = await userHelper.getUserScore(userID, scoreName.agenda);
+        defaultClient.trackTrace({message:'Current agenda score is ' + currentAgendaScore,severity:3});
+        await userHelper.setUserScoreInRange(isValidAgenda, scoreName.agenda, currentAgendaScore, 0, 30, 1, userID);
 
-        const attendeesAlreadyBooked: boolean = await this.checkAttendeesNotAlreadyBooked(currentEvent, context);
+        const attendeesAlreadyBooked: boolean = await this.checkAttendeesNotAlreadyBooked(currentEvent);
         if (attendeesAlreadyBooked != null) {
-            const currentAttendeeBookingsScore = await userHelper.getUserScore(userID, scoreName.attendeeBookings, context);
-            await userHelper.setUserScoreInRange(attendeesAlreadyBooked, scoreName.attendeeBookings, currentAttendeeBookingsScore, 0,30,1,userID, context);
+            const currentAttendeeBookingsScore = await userHelper.getUserScore(userID, scoreName.attendeeBookings);
+            await userHelper.setUserScoreInRange(attendeesAlreadyBooked, scoreName.attendeeBookings, currentAttendeeBookingsScore, 0,30,1,userID);
         }
     }
 
-    public static checkAgendaExists(selectedEvent: Event, context: Context): boolean {
+    public static checkAgendaExists(selectedEvent: Event): boolean {
         // TODO: identify further details
-        context.log('Checking agenda');
-        context.log(selectedEvent.bodyPreview.toLowerCase());
+        defaultClient.trackTrace({message:'Checking agenda',severity:3});
+        defaultClient.trackTrace({message:selectedEvent.bodyPreview.toLowerCase(),severity:3});
         if (selectedEvent.bodyPreview.toLowerCase().indexOf('agenda') > -1) {
-            context.log('Agenda found in event');
+            defaultClient.trackTrace({message:'Agenda found in event',severity:3});
             return true;
         }
-        context.log('Agenda not found in event');
+        defaultClient.trackTrace({message:'Agenda not found in event',severity:3});
         return false;
     }
 
-    public static async checkAttendeesNotAlreadyBooked(selectedEvent: Event, context: Context): Promise<boolean> {
+    public static async checkAttendeesNotAlreadyBooked(selectedEvent: Event): Promise<boolean> {
         const client = await GraphClient();
         let attendeesAlreadyBooked = false;
         if (selectedEvent.attendees !== null) {
-            context.log(selectedEvent.attendees);
-            context.log('Attendees found: ' + selectedEvent.attendees.keys.length);
+            defaultClient.trackTrace({message:'Attendee count:'+selectedEvent.attendees.length.toString(),severity:3});
+            defaultClient.trackTrace({message:'Attendees found: ' + selectedEvent.attendees.keys.length,severity:3});
             if (selectedEvent.attendees.keys.length === 0) {
                 return null;
             }
             selectedEvent.attendees.forEach(async (attendee: Attendee)=> {
                 // get events for the attendee at this time
-                context.log('Retrieving events for attendee ' + attendee.emailAddress.address);
+                defaultClient.trackTrace({message:'Retrieving events for attendee ' + attendee.emailAddress.address,severity:3});
                 const attendeeEventAPI = 'users/' + attendee.emailAddress.address + '/calendar/calendarView?startDateTime=' + selectedEvent.start.dateTime + '&endDateTime=' + selectedEvent.end.dateTime;
-                context.log('Retrieval API: ' + attendeeEventAPI);
+                defaultClient.trackTrace({message:'Retrieval API: ' + attendeeEventAPI,severity:3});
                 await client.api(attendeeEventAPI).get()
                 .then((attendeeEvents)=>{
-                    context.log(attendeeEvents);
+                    defaultClient.trackTrace({message:'Event count: ' + attendeeEvents.length.toString(),severity:3});
                     attendeeEvents.forEach(async (attendeeEvent: Event) => {
                         if (attendeeEvent.id !== selectedEvent.id) {
                             // eventCount++;
@@ -61,8 +62,8 @@ export class eventsHelper {
                     });
                 })
                 .catch((err)=>{
-                    context.log('Failed to retrieve events for ' + attendee.emailAddress.address);
-                    context.log(err);
+                    defaultClient.trackTrace({message:'Failed to retrieve events for ' + attendee.emailAddress.address,severity:3});
+                    defaultClient.trackTrace({message:err,severity:3});
                     attendeesAlreadyBooked = null;
                 });
                 // TODO: determine if we want to check the number and change the score if more overlapping events
@@ -76,20 +77,20 @@ export class eventsHelper {
         return attendeesAlreadyBooked;
     }
 
-    public static async listUserOrganisedEvents(userID: string, context: Context): Promise<Event[]> {
+    public static async listUserOrganisedEvents(userID: string): Promise<Event[]> {
         const client = await GraphClient();
 
         return client
             .api('users/'+userID+'/events?$filter=isOrganizer eq true')
             .get()
             .then((res) => {
-                context.log('Success');
-                //context.log(res);
+                defaultClient.trackTrace({message:'Success',severity:3});
+                //defaultClient.trackTrace({message:res);
                 return res;
             })
             .catch((err) => {
-                context.log('Failed');
-                context.log(err);
+                defaultClient.trackTrace({message:'Failed',severity:3});
+                defaultClient.trackTrace({message:err,severity:3});
                 throw err;
             });
     }

@@ -1,20 +1,20 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { GraphClient } from "../authHelpers";
 import { Subscription } from "@microsoft/microsoft-graph-types/microsoft-graph";
-import {NotificationReceiverUrl } from '../secrets'
+import {defaultClient, setup } from 'applicationinsights';
 
 export class subscriptionHelper {
 
-    public static async addEventSubscription(userID: string, context: Context) {
-        await this.addSubscription("users/" + userID + "/events", "UserEvent", context);
+    public static async addEventSubscription(userID: string) {
+        await this.addSubscription("users/" + userID + "/events", "UserEvent");
     }
 
-    public static async addSubscription(resource: string, subscriptionType: string, context: Context) {
+    public static async addSubscription(resource: string, subscriptionType: string) {
         const client = await GraphClient();
-        context.log("Adding subscription with url " + NotificationReceiverUrl);
+        defaultClient.trackTrace({message:"Adding subscription with url " + process.env['NotificationReceiverUrl'], severity:3});
         const subscriptionDate: Date = new Date();
         subscriptionDate.setDate(subscriptionDate.getDate() + 1);
-        context.log("Creating subscription date with expiry " + subscriptionDate.toISOString());
+        defaultClient.trackTrace({message:"Creating subscription date with expiry " + subscriptionDate.toISOString(), severity:3});
         return client
             .api("/subscriptions")
             .post(
@@ -22,34 +22,34 @@ export class subscriptionHelper {
                     "changeType": "created",
                     "clientState": subscriptionType,
                     "expirationDateTime": subscriptionDate.toISOString(),
-                    "notificationUrl": NotificationReceiverUrl,
+                    "notificationUrl": process.env['NotificationReceiverUrl'],
                     "resource": resource
                 }
             )
             .then((res) => {
-                context.log('Result received');
-                // context.log(res);
+                defaultClient.trackTrace({message:'Result received', severity:3});
+                // defaultClient.trackTrace({message:res);
                 return;
             })
             .catch((err) => {
-                context.log(err);
+                defaultClient.trackTrace({message:err, severity:3});
             });;
     }
 
-    public static async listSubscriptions(context: Context) { // : Promise<Subscription[]>
+    public static async listSubscriptions() { // : Promise<Subscription[]>
         const client = await GraphClient();
-        context.log("Listing subscriptions");
+        defaultClient.trackTrace({message:"Listing subscriptions", severity:3});
     
         return client.api("/subscriptions").get();
     }
 
-    public static async deleteSubscription(subscriptionId: string, context: Context) {
+    public static async deleteSubscription(subscriptionId: string) {
         const client = await GraphClient();
-        context.log("Deleting subscription with id " + subscriptionId);
+        defaultClient.trackTrace({message:"Deleting subscription with id " + subscriptionId, severity:3});
     
         await client.api("/subscriptions/" + subscriptionId).delete()
         .catch((err) => {
-            context.log('Damn, cannot delete: ' + err);
+            defaultClient.trackTrace({message:'Damn, cannot delete: ' + err, severity:3});
         });
     }
 }

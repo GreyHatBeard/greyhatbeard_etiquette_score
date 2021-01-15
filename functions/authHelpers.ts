@@ -1,14 +1,14 @@
-import { MicrosoftAppSecret, MicrosoftAppID, TenantDomain } from './secrets'
+
 import { Client } from '@microsoft/microsoft-graph-client'
 
 import fetch from 'node-fetch';
 
 export async function getAccessToken() {
     let body = {
-        client_id: MicrosoftAppID,
+        client_id: process.env["MicrosoftAppID"],
         grant_type: 'client_credentials',
         resource: 'https://graph.microsoft.com',
-        client_secret: MicrosoftAppSecret
+        client_secret: process.env["MicrosoftAppSecret"]
     };
 
     let options:any = {
@@ -24,7 +24,7 @@ export async function getAccessToken() {
 
     options.body = searchParams;
 
-    return fetch(`https://login.windows.net/${TenantDomain}/oauth2/token`, options).then((rawResponse) => {
+    return fetch(`https://login.windows.net/${process.env["TenantDomain"]}/oauth2/token`, options).then((rawResponse) => {
         return rawResponse.json()
     }).then((json) => {
         // console.log(json);

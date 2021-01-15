@@ -2,24 +2,25 @@ import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import { GraphClient } from "../authHelpers";
 import { User } from "@microsoft/microsoft-graph-types/microsoft-graph";
 import { scoreName } from '../model/constants';
+import {defaultClient, setup } from 'applicationinsights';
 
 export class userHelper {
 
-    public static async initialiseUserExtension(userId: string, context: Context) {
+    public static async initialiseUserExtension(userId: string) {
         
-        context.log('Initialising user extension');
-        await this.initialiseScoreExtension(userId, scoreName.current,500, context);
-        await this.initialiseScoreExtension(userId, scoreName.agenda, 15, context);
-        await this.initialiseScoreExtension(userId, scoreName.attendeeBookings, 15, context);
+        defaultClient.trackTrace({message:'Initialising user extension',severity:4});
+        await this.initialiseScoreExtension(userId, scoreName.current,500);
+        await this.initialiseScoreExtension(userId, scoreName.agenda, 15);
+        await this.initialiseScoreExtension(userId, scoreName.attendeeBookings, 15);
     }
 
-    private static async initialiseScoreExtension(userId: string, scoreName: string, score: number, context: Context) {
+    private static async initialiseScoreExtension(userId: string, scoreName: string, score: number) {
         const client = await GraphClient();
         await client
         .api('users/' + userId + '/extensions/com.greyhatbeard.etiquettescores.' + scoreName)
         .get()
         .then(async (res) => {
-            context.log('Extension value exists so resetting user value');
+            defaultClient.trackTrace({message:'Extension value exists so resetting user value',severity:4});
             await client
                 .api('users/' + userId + '/extensions/com.greyhatbeard.etiquettescores.' + scoreName)
                 .patch(
@@ -30,15 +31,15 @@ export class userHelper {
                     }
                 )
                 .then((res) => {
-                    context.log('Current score extensions set for ' + scoreName);
-                    //context.log(res);
+                    defaultClient.trackTrace({message:'Current score extensions set for ' + scoreName, severity:3});
+                    //defaultClient.trackTrace({message:res);
                 })
                 .catch((err) => {
-                    context.log('Error patching extension for score ' + scoreName);
+                    defaultClient.trackTrace({message:'Error patching extension for score ' + scoreName, severity:3});
                 });
         })
         .catch(async (err) => {
-            context.log('Extension does not exist for ' + scoreName + ' so creating');
+            defaultClient.trackTrace({message:'Extension does not exist for ' + scoreName + ' so creating',severity:4});
             client
                 .api('users/' + userId + '/extensions')
                 .post(
@@ -49,17 +50,17 @@ export class userHelper {
                     }
                 )
                 .then((res) => {
-                    context.log('Extensions created for ' + scoreName);
+                    defaultClient.trackTrace({message:'Extensions created for ' + scoreName, severity:3});
                 })
                 .catch((err) => {
-                    context.log('Failed to create extension for ' + scoreName + ': ' + err);
+                    defaultClient.trackTrace({message:'Failed to create extension for ' + scoreName + ': ' + err, severity:3});
                 });
         });
     }
 
-    public static async updateScore(scoreName: string, userId: string, updatedScore: number, context: Context) {
+    public static async updateScore(scoreName: string, userId: string, updatedScore: number) {
         const client = await GraphClient();
-        context.log('Updating user score ' + scoreName);
+        defaultClient.trackTrace({message:'Updating user score ' + scoreName, severity:3});
         // TODO: check if exists already
 
         return client
@@ -72,56 +73,56 @@ export class userHelper {
                 }
             )
             .then((res) => {
-                context.log('Score updated for ' + scoreName);
-                //context.log(res);
+                defaultClient.trackTrace({message:'Score updated for ' + scoreName, severity:3});
+                //defaultClient.trackTrace({message:res);
             })
             .catch((err) => {
-                context.log('Failed to update score ' + scoreName);
-                context.log(err);
+                defaultClient.trackTrace({message:'Failed to update score ' + scoreName, severity:3});
+                defaultClient.trackTrace({message:err, severity:3});
                 throw err;
             });
     }
 
-    public static async getUserScore(userId: string, scoreName: string, context: Context): Promise<number> {
+    public static async getUserScore(userId: string, scoreName: string): Promise<number> {
         const client = await GraphClient();
-        context.log('Retrieving user score for ' + scoreName);
+        defaultClient.trackTrace({message:'Retrieving user score for ' + scoreName, severity:3});
         return client
             .api('users/' + userId + '/extensions/com.greyhatbeard.etiquettescores.' + scoreName)
             .get()
             .then((res) => {
-                context.log('Extensions set');
-                context.log(res);
+                defaultClient.trackTrace({message:'Extensions set',severity:4});
+                defaultClient.trackTrace({message:res, severity:3});
                 const currentScore: number = res.score;
                 return currentScore;
             })
             .catch((err) => {
-                context.log('Failed to load score ' + scoreName);
-                context.log(err);
+                defaultClient.trackTrace({message:'Failed to load score ' + scoreName, severity:3});
+                defaultClient.trackTrace({message:err, severity:3});
                 throw err;
             });
     }
 
     public static async setUserScoreInRange(isValid: boolean, scoreName: string, 
             currentScore: number, lowRangeScore: number, highRangeScore: number, 
-            incrementValue: number, currentUser: string, context:Context) {
+            incrementValue: number, currentUser: string) {
 
-        context.log('Setting user score to for ' + scoreName);
+        defaultClient.trackTrace({message:'Setting user score to for ' + scoreName, severity:3});
         if (isValid) {
-            context.log('Increment score ' + scoreName);
+            defaultClient.trackTrace({message:'Increment score ' + scoreName, severity:3});
             
             if (currentScore >= highRangeScore) {
-                await userHelper.updateScore(scoreName,currentUser, highRangeScore,context);
+                await userHelper.updateScore(scoreName,currentUser, highRangeScore);
             } else {
-                await userHelper.updateScore(scoreName,currentUser, currentScore+incrementValue,context);
+                await userHelper.updateScore(scoreName,currentUser, currentScore+incrementValue);
             }
 
         } else {
-            context.log('Decrement score ' + scoreName);
+            defaultClient.trackTrace({message:'Decrement score ' + scoreName, severity:3});
 
             if (currentScore <= lowRangeScore) {
-                await userHelper.updateScore(scoreName,currentUser, lowRangeScore,context);
+                await userHelper.updateScore(scoreName,currentUser, lowRangeScore);
             } else {
-                await userHelper.updateScore(scoreName,currentUser, currentScore-incrementValue,context);
+                await userHelper.updateScore(scoreName,currentUser, currentScore-incrementValue);
             }
         }
     }

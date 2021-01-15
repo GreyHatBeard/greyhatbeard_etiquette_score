@@ -3,15 +3,19 @@ import { GraphClient } from "../authHelpers";
 import { User } from "@microsoft/microsoft-graph-types"
 import { userHelper } from '../helpers/userHelper';
 import { subscriptionHelper } from '../helpers/subscriptionHelper';
+import {defaultClient, setup } from 'applicationinsights';
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-    if (context) context.log("Starting Azure function!");
+    context.log("Starting Azure function!");
 
     // TODO: Get user ID from querystring
+
+    setup("").start();
     
-    await subscriptionHelper.addEventSubscription('48e8a1ab-0d3a-4f9b-b200-e9e9d1437a2b', context);
-    context.log("About to initalise user");
-    await userHelper.initialiseUserExtension('48e8a1ab-0d3a-4f9b-b200-e9e9d1437a2b', context);
+    await subscriptionHelper.addEventSubscription('48e8a1ab-0d3a-4f9b-b200-e9e9d1437a2b');
+    
+    defaultClient.trackTrace({message: "Initialising user extension", severity: 0});
+    await userHelper.initialiseUserExtension('48e8a1ab-0d3a-4f9b-b200-e9e9d1437a2b');
     context.log("Subscription created");
     context.res = {
         status: 200,

@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@microsoft/microsoft-graph-client": "^0.4.1",
+    "applicationinsights": "^1.8.8",
     "node-fetch": "^1.6.3"
   }
 }
